@@ -4,7 +4,7 @@
 // @include     http://www.erepublik.com/*
 // @grant       none
 // @description Helps you to become a true mercenary
-// @version     1
+// @version     2
 // ==/UserScript==
 
 function main(){
@@ -18,8 +18,7 @@ var DataRegister = function(){
     this.country = this.country[this.country.length-1];
     var self = this;
     this.sources = {
-    country_not_conquered: {
-
+        country_not_conquered: {
             address: "/country-list-not-conquered"
         }
         ,battle_countries: {
@@ -51,11 +50,12 @@ var DataRegister = function(){
                         html: ""
                     };
 
-                    if ($prev.hasClass("mpp_sign") || $this.text() === self.country)
+                    if ($prev.hasClass("mpp_sign") || $this.text() === self.country) {
                         temp.status = "ally";
-                    else if ($prev.hasClass("resistance_sign"))
-
+                    } else if ($prev.hasClass("resistance_sign")) {
                         temp.status = "resistance";
+                    }
+
                     temp.html = '<a class="gold_amount" href="' +
                         $this.closest("li").find(".fight_button").attr("href") + '">' +
 
@@ -67,7 +67,6 @@ var DataRegister = function(){
                 });
                 $notaccessible.each(function(){
                     result.notaccessible.countries[$(this).text()] = true;
-
                 });
                 return result;
             }
@@ -75,7 +74,6 @@ var DataRegister = function(){
         ,mercenary_countries: {
             address: "/en/citizen/profile/" + this.profile
             ,filter : function(htmlsource){
-
                 var $htmlsource = $(htmlsource);
                 var result = {
                     countries: {},
@@ -85,7 +83,6 @@ var DataRegister = function(){
                 $htmlsource.find(".country_list > li:not(.completed)").each(function(){
                     var $this = $(this);
                     result.countries[$this.attr("title")] = $this.find("em").text();
-
                 });
                 return result;
             }
@@ -95,7 +92,6 @@ var DataRegister = function(){
     this.get = function(attr, nocache){
         // invalidate old values in localStorage
         if (nocache === false){
-
             var ls = window.localStorage["erepscript." + attr];
             if (ls === undefined) {
                 ls = {timestamp: 0};
@@ -109,7 +105,6 @@ var DataRegister = function(){
             }
 
             if (this.attr[attr]) return this.attr[attr];
-
             if (ls.value !== null) return $.Deferred().resolve(ls.value);
         }
 
@@ -123,7 +118,6 @@ var DataRegister = function(){
                 result = value;
             }
             window.localStorage["erepscript." + attr] = JSON.stringify({
-
                 timestamp: +new Date()
                 ,value: result
             });
@@ -133,7 +127,6 @@ var DataRegister = function(){
 
     this.require = function(sources, done, nocache){
         if (nocache === undefined){
-
             nocache = false;
         }
         var deferreds = [];
@@ -158,28 +151,24 @@ var ErepScriptController = function(){
             }).appendTo($sidebar);
 
             for (var country in battle_countries.accessible.countries){
+                if (mercenary_countries.countries[country] !== undefined && battle_countries.accessible.countries[country].status !== "other") {
+                    var $temp = $(battle_countries.accessible.countries[country].html);
 
-            if (mercenary_countries.countries[country] !== undefined && battle_countries.accessible.countries[country].status !== "other") {
-                var $temp = $(battle_countries.accessible.countries[country].html);
-
-                $temp.find("strong").text(mercenary_countries.countries[country]);
-                $temp.appendTo($sidebar);
+                    $temp.find("strong").text(mercenary_countries.countries[country]);
+                    $temp.appendTo($sidebar);
+                }
             }
-            }
-                $("#erepscript_mercenary").remove();
-
-            $(".user_finances").after($sidebar);
+            $("#erepscript_mercenary").remove();
+            $(".user_finances").eq(0).after($sidebar);
         }, nocache);
     };
     this.mercenaryBattles = function(nocache){
         register.require(["battle_countries", "mercenary_countries"], function(battle_countries, mercenary_countries){
-
             for (var country in battle_countries.accessible.countries){
             if (mercenary_countries.countries[country] !== undefined) {
                 var color = "blue";
                 if (battle_countries.accessible.countries[country].status === "other"){
-
-                color = "grey";
+                    color = "grey";
                 }
                 $(battle_countries.accessible.selector).find(">li strong:contains(" + country + ")")
                 .css("color", color).text(country + " " + mercenary_countries.countries[country]);
@@ -187,16 +176,15 @@ var ErepScriptController = function(){
             }
             }
             for (country in battle_countries.notaccessible.countries){
-            if (mercenary_countries.countries[country] !== undefined){
-                var thecolor = "orange";
+                if (mercenary_countries.countries[country] !== undefined){
+                    var thecolor = "orange";
 
-                if (mercenary_countries.countries[country] !== "0/25"){
-                thecolor = "red";
+                    if (mercenary_countries.countries[country] !== "0/25"){
+                        thecolor = "red";
+                    }
+                    $(battle_countries.notaccessible.selector + "> li strong:contains(" + country + ")")
+                    .css("color", thecolor).text(country + " " + mercenary_countries.countries[country]);
                 }
-                $(battle_countries.notaccessible.selector + "> li strong:contains(" + country + ")")
-
-                .css("color", thecolor).text(country + " " + mercenary_countries.countries[country]);
-            }
             }
         }, nocache);
     };
@@ -205,7 +193,7 @@ var ErepScriptController = function(){
             var countries = JSON.parse(window.localStorage["countries_distance_1"]);
             console.log(countries);
         } else {
-        register.require(["country_not_conquered"], function(country_not_conquered){
+            register.require(["country_not_conquered"], function(country_not_conquered){
             country_not_conquered = JSON.parse(country_not_conquered);
             var deferred = $.Deferred().resolve();
 
@@ -240,14 +228,12 @@ var controller = new ErepScriptController();
 
 controller.mercenarySide();
 
-
 // mercenary battles
 if ($("#isBattleList")){
     controller.mercenaryBattles();
 }
 
 $("#large_sidebar").on("click", "#erepscript_mercenaryside_refresh", function(e){
-
     controller.mercenarySide(true);
     e.preventDefault();
 });
@@ -280,9 +266,6 @@ if ($("select#country_list")) {
 
 
 
-
-
-
 (function(callback){
   var script = document.createElement("script");
   script.setAttribute("src", "http://code.jquery.com/jquery-1.9.1.min.js");
@@ -296,7 +279,3 @@ if ($("select#country_list")) {
   }, false);
   document.body.appendChild(script);
 })(main);
-/*
-Exception: unterminated string literal
-@Scratchpad/3:274
-*/
